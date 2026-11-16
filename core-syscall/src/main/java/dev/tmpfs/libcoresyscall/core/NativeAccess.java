@@ -19,13 +19,33 @@ public class NativeAccess {
 
     /**
      * Clear the cache for the specified memory range.
+     * A zero-sized range is a no-op.
      *
      * @param address the start address of the memory range
      * @param size    the size of the memory range
+     * @throws IllegalArgumentException if size is negative or the aligned range overflows
      */
     public static void clearCache(long address, long size) {
-        long alignedAddress = address & -NativeBridge.getPageSize();
-        long alignedSize = (size + NativeBridge.getPageSize() - 1) & -NativeBridge.getPageSize();
+        if (size < 0) {
+            throw new IllegalArgumentException("size is negative: " + size);
+        }
+        if (size == 0) {
+            return;
+        }
+        long pageSize = NativeBridge.getPageSize();
+        long alignedAddress = address & -pageSize;
+        long offset = address - alignedAddress;
+        if (size > Long.MAX_VALUE - offset - (pageSize - 1)) {
+            throw new IllegalArgumentException("cache range is too large to align");
+        }
+        long alignedSize = (offset + size + pageSize - 1) & -pageSize;
+        long end = alignedAddress + alignedSize;
+        // Compare unsigned pointers without Long.compareUnsigned, which requires API 26.
+        if ((end ^ Long.MIN_VALUE) < (alignedAddress ^ Long.MIN_VALUE)
+                || (!NativeHelper.isCurrentRuntime64Bit()
+                && ((address >>> 32) != 0 || (end >>> 32) != 0))) {
+            throw new IllegalArgumentException("cache range overflows the address space");
+        }
         NativeBridge.nativeClearCache(alignedAddress, alignedSize);
     }
 
