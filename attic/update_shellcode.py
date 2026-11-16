@@ -65,7 +65,7 @@ def select_abis(values):
     if names == ["all"]:
         return list(ABIS)
     aliases = {"arm": "armeabi-v7a", "arm64": "arm64-v8a"}
-    names = [aliases.get(name, name) for name in names]
+    names = [aliases[name] if name in aliases else name for name in names]
     unknown = set(names) - ABIS.keys()
     if unknown:
         raise BuildError("Unknown ABI(s): " + ", ".join(sorted(unknown)))
@@ -202,7 +202,7 @@ def replace_body(source, method, lines):
     match = matches[0]
     # A missing closing delimiter must not consume the next method or class.
     for line in match["body"].splitlines():
-        indentation = re.match(r"[ \t]*", line)[0]
+        indentation = line[:len(line) - len(line.lstrip(" \t"))]
         if line.strip() and len(indentation) <= len(match["indent"]):
             raise BuildError(f"Unexpected member boundary inside {method}")
     body = match["newline"].join(match["indent"] + "    " + line for line in lines)
