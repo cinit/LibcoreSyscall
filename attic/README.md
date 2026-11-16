@@ -36,7 +36,7 @@ Any integer types or pointer which have the same or smaller size as `void*` can 
 function,
 and any integer types which has the same or smaller size as `void*` as well as pointer/void can be used as the return
 value.
-This is guaranteed by the x86-sysv/amd64/aapcs32/aapcs64/riscv64/mips calling conventions.
+This is guaranteed by the x86-sysv/amd64/aapcs32/aapcs64/riscv64 calling conventions.
 
 See [jni_wrapper.cc](jni_wrapper.cc).
 

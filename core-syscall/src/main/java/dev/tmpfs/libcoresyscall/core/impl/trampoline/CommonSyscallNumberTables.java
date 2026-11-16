@@ -5,8 +5,6 @@ import java.util.HashMap;
 import dev.tmpfs.libcoresyscall.core.NativeHelper;
 import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_Arm32;
 import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_Arm64;
-import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_Mips32el;
-import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_Mips64el;
 import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_Riscv64;
 import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_X86;
 import dev.tmpfs.libcoresyscall.core.impl.arch.ShellcodeImpl_X86_64;
@@ -17,7 +15,7 @@ public class CommonSyscallNumberTables {
         throw new AssertionError("no instances");
     }
 
-    private static final HashMap<Integer, ISyscallNumberTable> SYSCALL_NUMBER_TABLE_MAP = new HashMap<>(7);
+    private static final HashMap<Integer, ISyscallNumberTable> SYSCALL_NUMBER_TABLE_MAP = new HashMap<>(5);
 
     static {
         // add all supported ISAs
@@ -26,8 +24,6 @@ public class CommonSyscallNumberTables {
         SYSCALL_NUMBER_TABLE_MAP.put(NativeHelper.ISA_ARM64, ShellcodeImpl_Arm64.INSTANCE);
         SYSCALL_NUMBER_TABLE_MAP.put(NativeHelper.ISA_ARM, ShellcodeImpl_Arm32.INSTANCE);
         SYSCALL_NUMBER_TABLE_MAP.put(NativeHelper.ISA_RISCV64, ShellcodeImpl_Riscv64.INSTANCE);
-        SYSCALL_NUMBER_TABLE_MAP.put(NativeHelper.ISA_MIPS64, ShellcodeImpl_Mips64el.INSTANCE);
-        SYSCALL_NUMBER_TABLE_MAP.put(NativeHelper.ISA_MIPS, ShellcodeImpl_Mips32el.INSTANCE);
     }
 
     public static ISyscallNumberTable get() {

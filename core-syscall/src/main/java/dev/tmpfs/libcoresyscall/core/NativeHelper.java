@@ -26,9 +26,6 @@ public class NativeHelper {
     public static final int ISA_ARM = (ELF_CLASS_32 << 16) | 40;
     // EM_AARCH64 = 183
     public static final int ISA_ARM64 = (ELF_CLASS_64 << 16) | 183;
-    // EM_MIPS = 8
-    public static final int ISA_MIPS = (ELF_CLASS_32 << 16) | 8;
-    public static final int ISA_MIPS64 = (ELF_CLASS_64 << 16) | 8;
     // EM_RISCV = 243
     public static final int ISA_RISCV64 = (ELF_CLASS_64 << 16) | 243;
 
@@ -42,7 +39,7 @@ public class NativeHelper {
                 readExactly(fis, header, 0, header.length);
                 int isa = getIsaFromElfHeader(header);
                 // is an ISA we support?
-                if (isa == ISA_X86 || isa == ISA_X86_64 || isa == ISA_ARM || isa == ISA_ARM64 || isa == ISA_MIPS || isa == ISA_MIPS64 || isa == ISA_RISCV64) {
+                if (isa == ISA_X86 || isa == ISA_X86_64 || isa == ISA_ARM || isa == ISA_ARM64 || isa == ISA_RISCV64) {
                     sCurrentRuntimeIsa = isa;
                     return isa;
                 } else {
@@ -109,10 +106,6 @@ public class NativeHelper {
                 return "arm";
             case ISA_ARM64:
                 return "arm64";
-            case ISA_MIPS:
-                return "mips";
-            case ISA_MIPS64:
-                return "mips64";
             case ISA_RISCV64:
                 return "riscv64";
             default:

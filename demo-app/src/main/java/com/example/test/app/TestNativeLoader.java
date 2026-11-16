@@ -43,12 +43,6 @@ public class TestNativeLoader {
                 return "armeabi-v7a";
             case NativeHelper.ISA_ARM64:
                 return "arm64-v8a";
-            case NativeHelper.ISA_MIPS:
-                // not sure, I have never seen a mips device
-                return "mips";
-            case NativeHelper.ISA_MIPS64:
-                // not sure, I have never seen a mips64 device
-                return "mips64";
             case NativeHelper.ISA_RISCV64:
                 // not sure, I have never seen a riscv64 device
                 return "riscv64";

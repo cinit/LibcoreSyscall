@@ -16,18 +16,6 @@
     do {                                                                      \
       return (type) (res);                                                    \
     } while (0)
-#elif defined(__mips__)
-/* On MIPS, failing system calls return -1, and set errno in a
- * separate CPU register.
- */
-#define LSS_RETURN(type, res, err)                                          \
-    do {                                                                      \
-      if (err) {                                                              \
-        unsigned long __errnovalue = (res);                                   \
-        res = -(signed long)__errnovalue;                                                 \
-      }                                                                       \
-      return (type) (res);                                                    \
-    } while (0)
 #endif
 // we do not support powerpc
 
@@ -122,33 +110,6 @@ LSS_REG(0, arg1); LSS_REG(1, arg2); LSS_REG(2, arg3);
     LSS_REG(3, arg4); LSS_REG(4, arg5); LSS_REG(5, arg6);
     LSS_BODY(jlong, name, "r"(__r0), "r"(__r1), "r"(__r2), "r"(__r3),
                          "r"(__r4), "r"(__r5));
-#elif defined(__mips__)
-#if _MIPS_SIM == _MIPS_SIM_ABI32
-LSS_REG(4, arg1); LSS_REG(5, arg2); LSS_REG(6, arg3);
-    LSS_REG(7, arg4);
-    register unsigned long __v0 __asm__("$2") = nr;
-    __asm__ __volatile__ (".set noreorder\n"
-                          "subu  $29, 32\n"
-                          "sw    %5, 16($29)\n"
-                          "sw    %6, 20($29)\n"
-                          "syscall\n"
-                          "addiu $29, 32\n"
-                          ".set reorder\n"
-                          : "+r"(__v0), "+r" (__r7)
-                          : "r"(__r4), "r"(__r5),
-                            "r"(__r6), "r" ((unsigned long)arg5),
-                            "r" ((unsigned long)arg6)
-                          : "$8", "$9", "$10", "$11", "$12",
-                            "$13", "$14", "$15", "$24", "$25",
-                            "memory");
-    LSS_RETURN(jlong, __v0, __r7);
-#else
-LSS_REG(4, arg1); LSS_REG(5, arg2); LSS_REG(6, arg3);
-    LSS_REG(7, arg4); LSS_REG(8, arg5); LSS_REG(9, arg6);
-    LSS_BODY(jlong, name, "+r", "r"(__r4), "r"(__r5), "r"(__r6),
-             "r"(__r8), "r"(__r9));
-#endif
-
 #else
 #error "Unsupported architecture"
 #endif

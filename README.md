@@ -201,10 +201,8 @@ public String unameDemo() {
   However, I cannot guarantee that it will work on all real-world devices. It may crash everywhere. Use it at your own risk.
   I believe that this library SHOULD NOT be used in production code.
 
-- Q: I have found that there are some code snippets for mips/mips64 architecture in the library. Can I use it on mips/mips64 devices?  
-  A: No. These mips/mips64 code snippets are unfinished and untested.
-  I doubt whether there is any real-world mip/mips64 device running Android 5.0+.
-  If you do really need to use this library on mips/mips64 devices, you can try to add the mips/mips64 architecture support by yourself.
+- Q: Can I use this library on mips/mips64 devices?\
+  A: No. I have never seen a real-world mips/mips64 device running Android 5.0 (API 21) or later.
 
 - If you have any other questions, please feel free to open an issue.
 
