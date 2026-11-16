@@ -1,5 +1,7 @@
 #include "fake_fstat64.h"
 
+#include <sys/syscall.h>
+
 #include "syscall_ext.h"
 #include "hook_info.h"
 #include "ashmem_utils.h"

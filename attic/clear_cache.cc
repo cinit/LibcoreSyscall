@@ -1,5 +1,7 @@
 #include "clear_cache.h"
 
+#include <sys/syscall.h>
+
 #include "common_macros.h"
 
 #if !defined(assert)

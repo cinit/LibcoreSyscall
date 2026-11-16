@@ -2,7 +2,7 @@
 #define LIBCORE_SHELLCODE_FAKE_FSTAT64_H
 
 // for kernel_fstat64 and kernel_fstat structs
-#include "lss_wrapper.h"
+#include "kernel_abi.h"
 
 #include "common_macros.h"
 

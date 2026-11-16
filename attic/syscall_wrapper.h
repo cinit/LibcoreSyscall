@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #include "common_macros.h"
+#include "kernel_abi.h"
 
 // Linux syscall wrappers, are not the same as libc functions. They do not have an errno variable.
 // They return the error code directly, and the caller should check the return value to see if it is an error.

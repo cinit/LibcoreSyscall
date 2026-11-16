@@ -6,11 +6,12 @@
 #include <linux/auxvec.h>
 #include <sys/mman.h>
 #include <elf.h>
+#include <fcntl.h>
 
 #include "common_macros.h"
 #include "syscall_wrapper.h"
 #include "syscall_ext.h"
-#include "lss_wrapper.h"
+#include "kernel_abi.h"
 #include "hook_info.h"
 #include "ashmem_utils.h"
 

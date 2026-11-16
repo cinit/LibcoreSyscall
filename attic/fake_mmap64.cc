@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <errno.h>
 
 #include <sys/mman.h>
 #include <sys/stat.h>

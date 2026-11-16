@@ -19,7 +19,7 @@ SECTIONS {
 
     .dynamic : {
         *(.dynamic)
-    } > ramnone : phdr
+    } > ramnone : phdr : dynamic
 
     .dynsym : {
         *(.dynsym)
