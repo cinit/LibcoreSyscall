@@ -164,6 +164,7 @@ public String unameDemo() {
 - The Android-specific `libcore.io.Memory` and the evil `sun.misc.Unsafe` are used to access the native memory.
 - Anonymous executable pages are allocated using the `android.system.Os.mmap` method.
 - Native methods are registered with direct access to the `art::ArtMethod::entry_point_from_jni_` field.
+- Cache synchronization is performed using `art::FlushCpuCaches` with `@CriticalNative` calling convention.
 - Explanations of the shellcode details can be found in the [attic](attic/README.md) directory.
 
 ## Notice
