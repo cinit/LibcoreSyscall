@@ -15,8 +15,10 @@ NativeBridge_breakpoint
 extern "C" JNIEXPORT jlong JNICALL
 NativeBridge_nativeSyscall
         (JNIEnv* env, jclass _k, jint number, jlong arg1, jlong arg2, jlong arg3, jlong arg4, jlong arg5, jlong arg6) {
-    return (jlong) syscall_ext(number, (uintptr_t) arg1, (uintptr_t) arg2, (uintptr_t) arg3,
-                               (uintptr_t) arg4, (uintptr_t) arg5, (uintptr_t) arg6);
+    uintptr_t result = syscall_ext(number, (uintptr_t) arg1, (uintptr_t) arg2, (uintptr_t) arg3,
+                                  (uintptr_t) arg4, (uintptr_t) arg5, (uintptr_t) arg6);
+    // Sign-extend errors on 32-bit targets, but keep successful addresses unsigned.
+    return is_error(result) ? -(jlong) errno_of(result) : (jlong) result;
 }
 
 extern "C" JNIEXPORT void JNICALL
