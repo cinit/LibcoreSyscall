@@ -2,6 +2,8 @@
 
 // Raw Linux syscall ABI: return the kernel result, including -4095..-1 errors.
 // There is no libc errno or TLS access here.
+// Unwinding is unreliable on i386 and ARM32: syscalls repurpose ebp/r7, and this
+// ELF-less shellcode has no registered unwind metadata to describe those changes.
 __attribute__((noinline))
 EXPORT uintptr_t syscall_ext
         (int number, uintptr_t arg1, uintptr_t arg2, uintptr_t arg3, uintptr_t arg4, uintptr_t arg5, uintptr_t arg6) {
