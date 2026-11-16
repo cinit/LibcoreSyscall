@@ -198,7 +198,9 @@ public class MemoryAllocator {
             throw new AssertionError("requested size is too big");
         }
         // align the size to unit size.
-        final int allocateSizeBytes = (requestedSize + ALLOCATE_UNIT_SIZE - 1) & -ALLOCATE_UNIT_SIZE;
+        // Even an empty allocation needs its own slot so it can be freed independently.
+        final int allocateSizeBytes = Math.max(ALLOCATE_UNIT_SIZE,
+                (requestedSize + ALLOCATE_UNIT_SIZE - 1) & -ALLOCATE_UNIT_SIZE);
         synchronized (sArenaAllocLock) {
             ArenaBlockMemory memory = tryAllocateArenaMemoryLocked(allocateSizeBytes, requestedSize);
             if (memory != null) {
@@ -270,12 +272,22 @@ public class MemoryAllocator {
 
     /**
      * Allocate a memory block with the specified size. It's caller's responsibility to free the memory block.
+     * A zero-sized allocation returns an independently releasable block with a logical size of zero.
      *
      * @param size   the size of the memory block
      * @param zeroed whether to zero the memory block
      * @return the allocated memory block
+     * @throws IllegalArgumentException if size is negative or its page-aligned size cannot be represented
      */
     public static IAllocatedMemory allocate(long size, boolean zeroed) {
+        if (size < 0) {
+            throw new IllegalArgumentException("size is negative: " + size);
+        }
+        // The rounded size must fit both a Java long and the native size_t, before any state changes.
+        long maxSize = NativeHelper.isCurrentRuntime64Bit() ? Long.MAX_VALUE : 0xffffffffL;
+        if (size > (maxSize & -PAGE_SIZE)) {
+            throw new IllegalArgumentException("size is too large to align: " + size);
+        }
         // if requested size is 75% of page size, we allocate directly.
         if (size >= PAGE_SIZE * 3 / 4) {
             // anonymous memory maps are zeroed by default.
