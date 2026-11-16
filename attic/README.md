@@ -2,10 +2,10 @@
 
 Here are some explanations of the shellcode used in the library.
 
-Note that all the shellcode has been already compiled and based64-embedded into the Java code,
+Note that all the shellcode has been already compiled and Base64-embedded into the Java code,
 there is no need to compile the shellcode again if everything works fine.
 
-All these files in this `attic` directory are just for reference purposes.
+This directory contains the shellcode sources and the script used to regenerate the Java embeddings.
 
 ## Make the text section page aligned
 
@@ -42,17 +42,21 @@ See [jni_wrapper.cc](jni_wrapper.cc).
 
 ## Syscall
 
-Thanks to the linux-syscall-support library, things are much easier now.
+The syscall entry points return raw kernel results, including negative error codes,
+without accessing libc `errno` or Thread-Local-Storage. Error constants from
+`<errno.h>` are compile-time values.
 
-But keep in mind that shellcode has no libc, so there is neither Thread-Local-Storage nor `errno`.
+[kernel_abi.h](kernel_abi.h) contains only the required kernel stat/statfs layouts,
+copied from linux-syscall-support revision `29164a80da4d41134950d76d55199ea33fbb9613`.
+Syscall numbers come from the selected NDK headers.
 
-See [syscall_ext.cc](syscall_ext.cc).
+See [syscall_ext.c](syscall_ext.c).
 
 ## Clear Cache
 
 While the `__clear_cache` function is used without libc, a platform-specific implementation is needed.
 
-See [clear_cache.cc](clear_cache.cc).
+See [clear_cache.c](clear_cache.c).
 
 ## Readonly Data
 
@@ -80,6 +84,48 @@ See [libc_support.cc](libc_support.cc).
 
 ## Compile the Shellcode
 
+Use Python 3.8+ and an installed Android NDK on Linux or 64-bit Windows.
+
+From the repository root, build all five ABIs and update their Java embeddings:
+
+```shell
+python3 attic/update_shellcode.py --ndk /path/to/Android/Sdk --ndk-version 27.0.12077973
+```
+
+On Windows, use the same arguments with a Windows path:
+
+```powershell
+py -3 attic/update_shellcode.py --ndk "C:\Android\Sdk" --ndk-version 27.0.12077973
+```
+
+`--ndk` accepts an SDK root, its `ndk` directory, or a specific NDK installation.
+`--ndk-version` (also spelled `--toolchain-version`) selects and verifies the exact
+NDK package revision; it defaults to `27.0.12077973`, as used by the original build
+script. A different revision must be selected explicitly. No latest-version lookup
+is performed.
+
+`--abis` defaults to `all`: `armeabi-v7a`, `arm64-v8a`, `x86`, `x86_64`, and
+`riscv64`. Pass a space-separated or comma-separated subset to update only those
+classes. `arm` and `arm64` are accepted aliases. API 21 is used for the first four
+ABIs and API 35 for riscv64; the chosen NDK must support every selected target.
+
+```shell
+python3 attic/update_shellcode.py --ndk /path/to/ndk/27.0.12077973 --abis arm64-v8a x86_64
+python3 attic/update_shellcode.py --ndk /path/to/Android/Sdk --check
+```
+
+`--check` builds and compares without editing Java. Exit status is 0 for matching
+embeddings, 1 for stale embeddings, and 2 for a build or validation failure.
+Build products go to `attic/build/update-shellcode/` by default; `--build-dir`
+overrides that location.
+
+The updater copies `.text`, `.rodata`, `.got.plt`, and `.ARM.exidx`, preserving
+their address gaps. It calculates every RVA from the extracted image's base,
+including the local `sHookInfo` symbol. Only the bodies of `getShellcodeBytes()`
+and the twelve offset getters are replaced, and the rest of the Java class is left intact.
+
+### Compiler details
+
 Some compilers/linker specific flags are needed to compile the shellcode.
 
 - Symbolic linking, do not use GOT/PLT: `-Wl,-Bsymbolic`
@@ -92,15 +138,17 @@ Some compilers/linker specific flags are needed to compile the shellcode.
 - Specify the linker script: `-T,shellcode.ld`
 - Remove unused code: `-Wl,--gc-sections`
 
-An example command to compile the shellcode:
+Example commands to compile the shellcode for arm64 from this directory:
 
 ```shell
-/path/to/clang++ -shared -fPIC -std=c++14 -O3 \
+/path/to/clang --target=aarch64-linux-android21 -std=c11 -O3 -fPIC \
+-fvisibility=hidden -fno-plt -fno-omit-frame-pointer -Wall \
+-I. -c syscall_ext.c clear_cache.c
+/path/to/clang++ --target=aarch64-linux-android21 -shared -fPIC -std=c++23 -O3 \
 -fvisibility=hidden -fvisibility-inlines-hidden -fno-omit-frame-pointer -Wall \
 -fno-rtti -fno-exceptions -nostdlib \
 -Wl,-Bsymbolic,--no-allow-shlib-undefined,--no-undefined,-z,defs,-z,now,-z,relro,--gc-sections,-T,shellcode.ld \
--I/path/to/jni/include -I/path/to/linux-syscall-support \
-all_in_one.cc -o libcore_syscall.so
+-I. all_in_one.cc syscall_ext.o clear_cache.o -o libcore_syscall.so
 ```
 
 The `readelf --dynamic *.so` output may look like this:

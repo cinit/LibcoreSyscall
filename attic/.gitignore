@@ -16,3 +16,6 @@ compile_commands.json
 cmake-build-*/
 
 *.swp
+
+__pycache__/
+*.pyc
