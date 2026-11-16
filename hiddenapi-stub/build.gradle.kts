@@ -5,6 +5,8 @@ plugins {
 }
 
 android {
+    enableKotlin = false
+
     namespace = "dev.tmpfs.libcoresyscall.stub"
 
     compileSdk = libs.versions.compileSdk.get().toInt()

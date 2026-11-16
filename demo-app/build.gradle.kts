@@ -5,6 +5,8 @@ plugins {
 }
 
 android {
+    enableKotlin = false
+
     namespace = "com.example.test.app.syscalldemo"
 
     // a typical configuration for a test app
