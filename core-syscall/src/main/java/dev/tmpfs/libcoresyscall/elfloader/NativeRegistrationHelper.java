@@ -305,7 +305,21 @@ public class NativeRegistrationHelper {
                         i += 2;
                     } else if (second == '0') {
                         // '_0xxxx' -> unicode character
-                        int code = Integer.parseInt(new String(chars, i + 2, 4), 16);
+                        int code = 0;
+                        for (int j = i + 2; j < i + 6; j++) {
+                            char digit = chars[j];
+                            int value;
+                            if (digit >= '0' && digit <= '9') {
+                                value = digit - '0';
+                            } else if (digit >= 'a' && digit <= 'f') {
+                                value = digit - 'a' + 10;
+                            } else if (digit >= 'A' && digit <= 'F') {
+                                value = digit - 'A' + 10;
+                            } else {
+                                return null;
+                            }
+                            code = (code << 4) | value;
+                        }
                         sb.append((char) code);
                         i += 6;
                     } else if ((second >= 'A' && second <= 'Z') || (second >= 'a' && second <= 'z') || (second >= '0' && second <= '9')) {
@@ -325,13 +339,19 @@ public class NativeRegistrationHelper {
                         } else if ((third >= 'A' && third <= 'Z') || (third >= 'a' && third <= 'z') || (third >= '0' && third <= '9') || third == '_') {
                             // "__" is for long name, the end of class name
                             break;
+                        } else {
+                            return null;
                         }
+                    } else {
+                        return null;
                     }
+                } else {
+                    return null;
                 }
             }
             // find the end of the class name, that is, the last '.'
             int lastDot = sb.lastIndexOf(".");
-            if (lastDot == -1) {
+            if (lastDot <= 0) {
                 // should not happen
                 return null;
             }
