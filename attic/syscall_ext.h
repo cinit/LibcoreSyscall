@@ -3,8 +3,6 @@
 
 #include "common_macros.h"
 
-#include <type_traits>
-
 EXPORT uintptr_t syscall_ext(int number, uintptr_t arg1, uintptr_t arg2, uintptr_t arg3,
                              uintptr_t arg4, uintptr_t arg5, uintptr_t arg6);
 
@@ -34,7 +32,7 @@ static inline int errno_of(void* res) {
 #else
 
 static inline int is_error(uintptr_t res) {
-    auto r = (ptrdiff_t) res;
+    ptrdiff_t r = (ptrdiff_t) res;
     return r < 0 && r >= -4095;
 }
 
