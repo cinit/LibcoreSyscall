@@ -1,5 +1,6 @@
 package dev.tmpfs.libcoresyscall.core.impl;
 
+import android.os.Build;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -94,9 +95,24 @@ public class NativeBridge {
                 // I have no idea what happened.
                 throw ReflectHelper.unsafeThrow(e);
             }
-            // 4. Write the trampoline to the memory region.
-            Memory.pokeByteArray(address, trampoline.trampolineCode, 0, trampoline.trampolineCode.length);
-            // 5. Register the native method.
+            try {
+                // 4. Write the trampoline and synchronize caches before executing any of it.
+                Memory.pokeByteArray(address, trampoline.trampolineCode, 0, trampoline.trampolineCode.length);
+                if (Build.VERSION.SDK_INT >= 26) {
+                    NativeCacheHelper.clearCache(address, address + trampoline.trampolineCode.length);
+                } else {
+                    ProcMemCacheHelper.clearCache(address, address + trampoline.trampolineCode.length);
+                }
+            } catch (Throwable e) {
+                // No native entry points refer to this allocation yet, so it is safe to release.
+                try {
+                    Os.munmap(address, pageSize);
+                } catch (ErrnoException cleanupError) {
+                    e.addSuppressed(cleanupError);
+                }
+                throw ReflectHelper.unsafeThrow(e);
+            }
+            // 5. Register the native methods.
             for (Map.Entry<Method, Integer> methods : trampoline.nativeEntryOffsetMap.entrySet()) {
                 Method method = methods.getKey();
                 int offset = methods.getValue();
@@ -107,14 +123,7 @@ public class NativeBridge {
             sNativeMethodRegistered = true;
         }
         if (!sTrampolineSetReadOnly) {
-            // 6. Clear the instruction cache.
-            // Unfortunately, there is no way to clear the instruction cache without using JNI.
-            // The I-cache is typically empty since we the page is just allocated.
-            // But we had better flush the D-cache to make sure the CPU loads the latest instructions into the I-cache.
-            // If we successfully invoke the nativeClearCache method without a crash, then there will be no further issues.
-            // TODO: 2024-10-28 Do something to clear the d-cache.
-            NativeBridge.nativeClearCache(sTrampolineBase, getPageSize());
-            // 7. Set the memory region to read-only.
+            // 6. Set the memory region to read-only.
             long pageSize = getPageSize();
             ISyscallNumberTable sysnr = CommonSyscallNumberTables.get();
             try {
