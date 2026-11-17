@@ -1,6 +1,8 @@
 [versions]
 agp = "9.5.1"
-compileSdk = "35"
+compileSdk = "37"
+compileSdkMinor = "2"
+targetSdk = "37"
 
 [libraries]
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }

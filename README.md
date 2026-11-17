@@ -5,7 +5,7 @@ load any in-memory ELF shared objects (lib*.so) without a writable path/mount po
 
 ## Features
 
-- Support Android 5.0 - 15
+- Support Android 5.0 - 17.2
 - Support any system calls (as long as they are permitted by the seccomp filter)
 - Support loading in-memory ELF shared objects (lib*.so) without a file
 - Support arm/arm64/x86/x86_64/riscv64 architectures
